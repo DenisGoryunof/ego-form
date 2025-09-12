@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма заказа услуг</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+    <div class="form-container">
+        <h1>Заказ услуг</h1>
+        <form id="service-form" novalidate>
+            <div class="form-group">
+                <label for="first-name">Имя<span class="required">*</span></label>
+                <input type="text" id="first-name" name="firstName" required placeholder="Введите ваше имя">
+                <div class="error-message" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="last-name">Фамилия<span class="required">*</span></label>
+                <input type="text" id="last-name" name="lastName" required placeholder="Введите вашу фамилию">
+                <div class="error-message" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="birth-date">Дата рождения <span class="required">*</span></label>
+                <input type="date" id="birth-date" name="birthDate" required>
+                <div class="error-message" aria-live="polite"></div>
+            </div>
+
+            <fieldset class="form-group">
+                <legend>Пол <span class="required">*</span></legend>
+                <div class="radio-group">
+                    <div>
+                        <input type="radio" id="male" name="gender" value="male" required>
+                        <label for="male">Мужской</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="female" name="gender" value="female">
+                        <label for="female">Женский</label>
+                    </div>
+                </div>
+                <div class="error-message" aria-live="polite"></div>
+            </fieldset>
+
+            <fieldset class="form-group" id="services-group">
+                <legend>Услуги <span class="required">*</span></legend>
+                <p class="legend-subtitle">Выберите хотя бы одну</p>
+                <div class="services-grid">
+                    <div>
+                        <input type="checkbox" id="laser" name="services" value="laser">
+                        <label for="laser">Лазерная эпиляция</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="tan" name="services" value="tan">
+                        <label for="tan">Моментальный загар</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="manicure" name="services" value="manicure">
+                        <label for="manicure">Маникюр</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="pedicure" name="services" value="pedicure">
+                        <label for="pedicure">Педикюр</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="makeup" name="services" value="makeup">
+                        <label for="makeup">Визажист</label>
+                    </div>
+                </div>
+                <div class="error-message" aria-live="polite"></div>
+            </fieldset>
+
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <p>Ваш заказ отправлен, спасибо за Ваш заказ</p>
+        </div>
+    </div>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "script": "./script.js"
+      }
+    }
+    </script>
+    <script type="module">
+        import 'script';
+    </script>
+
+</body>
+</html>
