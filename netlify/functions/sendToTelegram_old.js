@@ -15,7 +15,6 @@ exports.handler = async (event) => {
     
     // Проверяем наличие переменных окружения
     if (!BOT_TOKEN || !CHAT_IDS) {
-      console.error('Missing environment variables: BOT_TOKEN or CHAT_IDS');
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Server configuration error' })
@@ -62,7 +61,6 @@ exports.handler = async (event) => {
         body: JSON.stringify({ message: 'Данные успешно отправлены' })
       };
     } else {
-      console.error('Telegram API error:', responses);
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Ошибка при отправке в Telegram' })
