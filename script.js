@@ -98,12 +98,22 @@ document.addEventListener('DOMContentLoaded', () => {
 			return false;
 		}
 		
-		// Простая проверка: должен содержать @ или + или цифры/буквы
-		const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{4,}$/;
+		// Простая проверка: должен начинаться с @, + или буквы/цифры
+		// и содержать минимум 5 символов (например: @user, +7999, username)
+		const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{3,}$/;
 		
 		if (!socialRegex.test(socialValue)) {
-			showError(container, 'Введите корректный аккаунт (@username или +79999999999).');
+			showError(container, 'Введите корректный аккаунт. Например: @username или +79999999999');
 			return false;
+		}
+		
+		// Дополнительная проверка для телефонных номеров
+		if (socialValue.startsWith('+')) {
+			const phonePart = socialValue.replace(/\D/g, '');
+			if (phonePart.length < 10) {
+				showError(container, 'Номер телефона слишком короткий.');
+				return false;
+			}
 		}
 		
 		clearError(container);
