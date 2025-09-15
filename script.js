@@ -11,11 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = document.getElementById('phone');
     const social = document.getElementById('social');
     const genderRadios = document.querySelectorAll('input[name="gender"]');
-    const contactMethodRadios = document.querySelectorAll('input[name="contactMethod"]');
+    const socialTypeRadios = document.querySelectorAll('input[name="socialType"]');
     const servicesCheckboxes = document.querySelectorAll('input[name="services"]');
     const servicesGroup = document.getElementById('services-group');
     const genderFieldset = document.querySelector('input[name="gender"]').closest('fieldset');
-    const contactMethodFieldset = document.querySelector('input[name="contactMethod"]').closest('fieldset');
+    const socialTypeFieldset = document.querySelector('input[name="socialType"]').closest('fieldset');
 
     const fieldsToValidate = [
         { element: firstName, validator: () => validateRequired(firstName) },
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { element: phone, validator: () => validatePhone(phone) },
         { element: social, validator: () => validateSocial(social) },
         { elements: genderRadios, validator: validateRadioGroup },
-        { elements: contactMethodRadios, validator: () => validateContactMethod() },
+        { elements: socialTypeRadios, validator: () => validateSocialType() },
         { elements: servicesCheckboxes, validator: validateCheckboxGroup },
     ];
 
@@ -98,26 +98,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const socialValue = element.value.trim();
         
         if (socialValue === '') {
-            showError(container, 'Аккаунт в соцсети обязателен для заполнения.');
+            showError(container, 'Аккаунт обязателен для заполнения.');
             return false;
         }
         
         // Простая проверка: должен начинаться с @, + или буквы/цифры
-        // и содержать минимум 5 символов (например: @user, +7999, username)
         const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{3,}$/;
         
         if (!socialRegex.test(socialValue)) {
             showError(container, 'Введите корректный аккаунт. Например: @username или +79999999999');
             return false;
-        }
-        
-        // Дополнительная проверка для телефонных номеров
-        if (socialValue.startsWith('+')) {
-            const phonePart = socialValue.replace(/\D/g, '');
-            if (phonePart.length < 10) {
-                showError(container, 'Номер телефона слишком короткий.');
-                return false;
-            }
         }
         
         clearError(container);
@@ -135,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    function validateContactMethod() {
-        const checked = document.querySelector('input[name="contactMethod"]:checked');
-        const container = contactMethodFieldset;
+    function validateSocialType() {
+        const checked = document.querySelector('input[name="socialType"]:checked');
+        const container = socialTypeFieldset;
         if (!checked) {
-            showError(container, 'Выберите предпочтительный способ связи.');
+            showError(container, 'Выберите социальную сеть для связи.');
             return false;
         }
         clearError(container);
@@ -165,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!validatePhone(phone)) isValid = false;
         if (!validateSocial(social)) isValid = false;
         if (!validateRadioGroup()) isValid = false;
-        if (!validateContactMethod()) isValid = false;
+        if (!validateSocialType()) isValid = false;
         if (!validateCheckboxGroup()) isValid = false;
         return isValid;
     };
@@ -203,20 +193,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const phoneValue = phone.value.trim();
         const socialValue = social.value.trim();
         const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
-        const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
+        const socialTypeValue = document.querySelector('input[name="socialType"]:checked').value;
         const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
             .map(cb => cb.labels[0].textContent)
             .join(', ');
 
-        // Формируем правильную ссылку из введенного аккаунта
+        // Формируем правильную ссылку в зависимости от выбранной соцсети
         let socialLink = socialValue;
-        if (socialValue.startsWith('@')) {
-            socialLink = `https://t.me/${socialValue.substring(1)}`;
-        } else if (socialValue.startsWith('+')) {
-            socialLink = `https://wa.me/${socialValue.replace(/\D/g, '')}`;
-        } else if (!socialValue.startsWith('http')) {
-            // Если просто имя без @, предполагаем Telegram
-            socialLink = `https://t.me/${socialValue}`;
+        let socialDisplay = socialValue;
+        
+        if (socialTypeValue === 'telegram') {
+            if (socialValue.startsWith('@')) {
+                socialLink = `https://t.me/${socialValue.substring(1)}`;
+                socialDisplay = socialValue;
+            } else if (socialValue.startsWith('+')) {
+                // Если номер телефона для Telegram
+                socialLink = `https://t.me/${socialValue.replace(/\D/g, '')}`;
+                socialDisplay = socialValue;
+            } else {
+                socialLink = `https://t.me/${socialValue}`;
+                socialDisplay = `@${socialValue}`;
+            }
+        } else if (socialTypeValue === 'whatsapp') {
+            if (socialValue.startsWith('@')) {
+                // Если @username для WhatsApp - преобразуем в номер
+                socialLink = `https://wa.me/7${socialValue.substring(1).replace(/\D/g, '')}`;
+                socialDisplay = `+7${socialValue.substring(1).replace(/\D/g, '')}`;
+            } else {
+                socialLink = `https://wa.me/${socialValue.replace(/\D/g, '')}`;
+                socialDisplay = socialValue.startsWith('+') ? socialValue : `+${socialValue}`;
+            }
         }
 
         const formData = {
@@ -224,10 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
             lastName: lastNameValue,
             birthDate: birthDateValue,
             phone: phoneValue,
-            social: socialLink, // отправляем готовую ссылку
-            socialDisplay: socialValue, // исходное значение для отображения
+            social: socialLink,
+            socialDisplay: socialDisplay,
+            socialType: socialTypeValue,
             gender: genderValue,
-            contactMethod: contactMethodValue,
             services: servicesValue
         };
 

@@ -36,10 +36,10 @@
             </div>
 
             <div class="form-group">
-				<label for="social">Ссылка на WhatsApp или Telegram<span class="required">*</span></label>
-				<input type="text" id="social" name="social" required placeholder="@username или +79999999999">
-				<div class="error-message" aria-live="polite"></div>
-			</div>
+                <label for="social">Ваш аккаунт<span class="required">*</span></label>
+                <input type="text" id="social" name="social" required placeholder="@username или +79999999999">
+                <div class="error-message" aria-live="polite"></div>
+            </div>
 
             <fieldset class="form-group">
                 <legend>Пол <span class="required">*</span></legend>
@@ -57,19 +57,15 @@
             </fieldset>
 
             <fieldset class="form-group">
-                <legend>Предпочтительный способ связи <span class="required">*</span></legend>
+                <legend>Социальная сеть для связи <span class="required">*</span></legend>
                 <div class="radio-group">
                     <div>
-                        <input type="radio" id="contact-whatsapp" name="contactMethod" value="whatsapp" required>
-                        <label for="contact-whatsapp">WhatsApp</label>
+                        <input type="radio" id="social-telegram" name="socialType" value="telegram" required>
+                        <label for="social-telegram">Telegram</label>
                     </div>
                     <div>
-                        <input type="radio" id="contact-telegram" name="contactMethod" value="telegram">
-                        <label for="contact-telegram">Telegram</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="contact-phone" name="contactMethod" value="phone">
-                        <label for="contact-phone">Телефонный звонок</label>
+                        <input type="radio" id="social-whatsapp" name="socialType" value="whatsapp">
+                        <label for="social-whatsapp">WhatsApp</label>
                     </div>
                 </div>
                 <div class="error-message" aria-live="polite"></div>

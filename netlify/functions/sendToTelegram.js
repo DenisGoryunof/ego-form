@@ -24,19 +24,15 @@ exports.handler = async (event) => {
     
     const formData = JSON.parse(event.body);
     
-    const { firstName, lastName, birthDate, phone, social, socialDisplay, gender, contactMethod, services } = formData;
-
-    // Используем socialDisplay если есть, иначе social
-    const socialDisplayText = socialDisplay || social;
+    const { firstName, lastName, birthDate, phone, social, socialDisplay, socialType, gender, services } = formData;
 
     let message = `📩 <b>Вам новая заявка:</b>\n\n`;
     message += `<b>Имя:</b> ${firstName}\n`;
     message += `<b>Фамилия:</b> ${lastName}\n`;
     message += `<b>Дата рождения:</b> ${birthDate}\n`;
     message += `<b>Телефон:</b> ${phone}\n`;
-    message += `<b>Соцсеть:</b> <a href="${social}">${socialDisplayText}</a>\n`;
+    message += `<b>Соцсеть:</b> <a href="${social}">${socialDisplay}</a> (${socialType === 'telegram' ? 'Telegram' : 'WhatsApp'})\n`;
     message += `<b>Пол:</b> ${gender}\n`;
-    message += `<b>Способ связи:</b> ${contactMethod}\n`;
     message += `<b>Услуги:</b> ${services}`;
 
     const chatIdsArray = CHAT_IDS.split(',');
