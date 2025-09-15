@@ -89,27 +89,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    function validateSocial(element) {
-        const container = element.parentElement;
-        const socialValue = element.value.trim();
-        
-        if (socialValue === '') {
-            showError(container, 'Ссылка на соцсеть обязательна для заполнения.');
-            return false;
-        }
-        
-        // Валидация WhatsApp или Telegram ссылки
-        const whatsappRegex = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\/\+\d+(\?.*)?$/;
-        const telegramRegex = /^https?:\/\/(t\.me|telegram\.me)\/[a-zA-Z0-9_]{5,32}$/;
-        
-        if (!whatsappRegex.test(socialValue) && !telegramRegex.test(socialValue)) {
-            showError(container, 'Введите корректную ссылку WhatsApp или Telegram.');
-            return false;
-        }
-        
-        clearError(container);
-        return true;
-    }
+	function validateSocial(element) {
+		const container = element.parentElement;
+		const socialValue = element.value.trim();
+		
+		if (socialValue === '') {
+			showError(container, 'Аккаунт в соцсети обязателен для заполнения.');
+			return false;
+		}
+		
+		// Простая проверка: должен содержать @ или + или цифры/буквы
+		const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{4,}$/;
+		
+		if (!socialRegex.test(socialValue)) {
+			showError(container, 'Введите корректный аккаунт (@username или +79999999999).');
+			return false;
+		}
+		
+		clearError(container);
+		return true;
+	}
 
     function validateRadioGroup() {
         const checked = document.querySelector('input[name="gender"]:checked');
@@ -183,58 +182,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const sendToTelegram = async () => {
-        const firstNameValue = firstName.value.trim();
-        const lastNameValue = lastName.value.trim();
-        const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
-        const phoneValue = phone.value.trim();
-        const socialValue = social.value.trim();
-        const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
-        const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
-        const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
-            .map(cb => cb.labels[0].textContent)
-            .join(', ');
+	 const sendToTelegram = async () => {
+		const firstNameValue = firstName.value.trim();
+		const lastNameValue = lastName.value.trim();
+		const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
+		const phoneValue = phone.value.trim();
+		const socialValue = social.value.trim();
+		const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
+		const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
+		const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
+			.map(cb => cb.labels[0].textContent)
+			.join(', ');
 
-        const formData = {
-            firstName: firstNameValue,
-            lastName: lastNameValue,
-            birthDate: birthDateValue,
-            phone: phoneValue,
-            social: socialValue,
-            gender: genderValue,
-            contactMethod: contactMethodValue,
-            services: servicesValue
-        };
+		// Формируем правильную ссылку из введенного аккаунта
+		let socialLink = socialValue;
+		if (socialValue.startsWith('@')) {
+			socialLink = `https://t.me/${socialValue.substring(1)}`;
+		} else if (socialValue.startsWith('+')) {
+			socialLink = `https://wa.me/${socialValue.replace(/\D/g, '')}`;
+		} else if (!socialValue.startsWith('http')) {
+			// Если просто имя без @, предполагаем Telegram
+			socialLink = `https://t.me/${socialValue}`;
+		}
 
-        console.log('Sending data:', formData);
+		const formData = {
+			firstName: firstNameValue,
+			lastName: lastNameValue,
+			birthDate: birthDateValue,
+			phone: phoneValue,
+			social: socialLink, // отправляем готовую ссылку
+			socialRaw: socialValue, // и исходное значение для отладки
+			gender: genderValue,
+			contactMethod: contactMethodValue,
+			services: servicesValue
+		};
 
-        try {
-            const response = await fetch('/.netlify/functions/sendToTelegram', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+		console.log('Sending data:', formData);
 
-            const result = await response.json();
-            console.log('Server response:', result);
-            
-            if (!response.ok) {
-                // Если статус 500, но сообщение отправлено (частично успешно)
-                if (response.status === 500 && result.message) {
-                    // Все равно считаем успехом, если есть message
-                    return result;
-                }
-                throw new Error(result.error || 'Ошибка при отправке данных');
-            }
+		try {
+			const response = await fetch('/.netlify/functions/sendToTelegram', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(formData),
+			});
 
-            return result;
-        } catch (error) {
-            console.error("Failed to send message:", error);
-            throw error;
-        }
-    };
+			const result = await response.json();
+			console.log('Server response:', result);
+			
+			if (!response.ok) {
+				// Если статус 500, но сообщение отправлено (частично успешно)
+				if (response.status === 500 && result.message) {
+					// Все равно считаем успехом, если есть message
+					return result;
+				}
+				throw new Error(result.error || 'Ошибка при отправке данных');
+			}
+
+			return result;
+		} catch (error) {
+			console.error("Failed to send message:", error);
+			throw error;
+		}
+	};
 
     const showPopup = () => {
         popup.classList.add('show');

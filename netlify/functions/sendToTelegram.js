@@ -26,15 +26,15 @@ exports.handler = async (event) => {
     
     const { firstName, lastName, birthDate, phone, social, gender, contactMethod, services } = formData;
 
-    let message = `📩 <b>Вам новая заявка:</b>\n\n`;
-    message += `<b>Имя:</b> ${firstName}\n`;
-    message += `<b>Фамилия:</b> ${lastName}\n`;
-    message += `<b>Дата рождения:</b> ${birthDate}\n`;
-    message += `<b>Телефон:</b> ${phone}\n`;
-    message += `<b>Соцсеть:</b> ${social}\n`;
-    message += `<b>Пол:</b> ${gender}\n`;
-    message += `<b>Способ связи:</b> ${contactMethod}\n`;
-    message += `<b>Услуги:</b> ${services}`;
+	let message = `📩 <b>Вам новая заявка:</b>\n\n`;
+	message += `<b>Имя:</b> ${firstName}\n`;
+	message += `<b>Фамилия:</b> ${lastName}\n`;
+	message += `<b>Дата рождения:</b> ${birthDate}\n`;
+	message += `<b>Телефон:</b> ${phone}\n`;
+	message += `<b>Соцсеть:</b> <a href="${social}">${socialRaw}</a>\n`;
+	message += `<b>Пол:</b> ${gender}\n`;
+	message += `<b>Способ связи:</b> ${contactMethod}\n`;
+	message += `<b>Услуги:</b> ${services}`;
 
     const chatIdsArray = CHAT_IDS.split(',');
     const results = [];
