@@ -4,5 +4,8 @@
   "description": "Form with Telegram integration",
   "dependencies": {
     "node-fetch": "^2.6.7"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
