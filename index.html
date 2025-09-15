@@ -8,7 +8,6 @@
 </head>
 <body>
 
-
     <div class="form-container">
         <h1>Заказ услуг</h1>
         <form id="service-form" novalidate>
@@ -30,6 +29,18 @@
                 <div class="error-message" aria-live="polite"></div>
             </div>
 
+            <div class="form-group">
+                <label for="phone">Номер телефона<span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" required placeholder="+7 (999) 999-99-99">
+                <div class="error-message" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="social">Ссылка на WhatsApp или Telegram<span class="required">*</span></label>
+                <input type="url" id="social" name="social" required placeholder="https://t.me/username или https://wa.me/79999999999">
+                <div class="error-message" aria-live="polite"></div>
+            </div>
+
             <fieldset class="form-group">
                 <legend>Пол <span class="required">*</span></legend>
                 <div class="radio-group">
@@ -40,6 +51,25 @@
                     <div>
                         <input type="radio" id="female" name="gender" value="female">
                         <label for="female">Женский</label>
+                    </div>
+                </div>
+                <div class="error-message" aria-live="polite"></div>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>Предпочтительный способ связи <span class="required">*</span></legend>
+                <div class="radio-group">
+                    <div>
+                        <input type="radio" id="contact-whatsapp" name="contactMethod" value="whatsapp" required>
+                        <label for="contact-whatsapp">WhatsApp</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="contact-telegram" name="contactMethod" value="telegram">
+                        <label for="contact-telegram">Telegram</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="contact-phone" name="contactMethod" value="phone">
+                        <label for="contact-phone">Телефонный звонок</label>
                     </div>
                 </div>
                 <div class="error-message" aria-live="polite"></div>

@@ -8,16 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstName = document.getElementById('first-name');
     const lastName = document.getElementById('last-name');
     const birthDate = document.getElementById('birth-date');
+    const phone = document.getElementById('phone');
+    const social = document.getElementById('social');
     const genderRadios = document.querySelectorAll('input[name="gender"]');
+    const contactMethodRadios = document.querySelectorAll('input[name="contactMethod"]');
     const servicesCheckboxes = document.querySelectorAll('input[name="services"]');
     const servicesGroup = document.getElementById('services-group');
     const genderFieldset = document.querySelector('input[name="gender"]').closest('fieldset');
+    const contactMethodFieldset = document.querySelector('input[name="contactMethod"]').closest('fieldset');
 
     const fieldsToValidate = [
         { element: firstName, validator: () => validateRequired(firstName) },
         { element: lastName, validator: () => validateRequired(lastName) },
         { element: birthDate, validator: () => validateRequired(birthDate) },
+        { element: phone, validator: () => validatePhone(phone) },
+        { element: social, validator: () => validateSocial(social) },
         { elements: genderRadios, validator: validateRadioGroup },
+        { elements: contactMethodRadios, validator: () => validateContactMethod() },
         { elements: servicesCheckboxes, validator: validateCheckboxGroup },
     ];
 
@@ -27,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFormValid) {
             setButtonLoading(true);
             try {
-                await sendToTelegram();
+                console.log('Starting form submission...');
+                const result = await sendToTelegram();
+                console.log('Form submitted successfully:', result);
                 showPopup();
             } catch (error) {
                 console.error("Failed to send message to Telegram:", error);
@@ -60,11 +69,64 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    function validatePhone(element) {
+        const container = element.parentElement;
+        const phoneValue = element.value.trim();
+        
+        if (phoneValue === '') {
+            showError(container, 'Номер телефона обязателен для заполнения.');
+            return false;
+        }
+        
+        // Простая валидация номера телефона
+        const phoneRegex = /^(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
+        if (!phoneRegex.test(phoneValue.replace(/\s/g, ''))) {
+            showError(container, 'Введите корректный номер телефона.');
+            return false;
+        }
+        
+        clearError(container);
+        return true;
+    }
+
+    function validateSocial(element) {
+        const container = element.parentElement;
+        const socialValue = element.value.trim();
+        
+        if (socialValue === '') {
+            showError(container, 'Ссылка на соцсеть обязательна для заполнения.');
+            return false;
+        }
+        
+        // Валидация WhatsApp или Telegram ссылки
+        const whatsappRegex = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\/\+\d+(\?.*)?$/;
+        const telegramRegex = /^https?:\/\/(t\.me|telegram\.me)\/[a-zA-Z0-9_]{5,32}$/;
+        
+        if (!whatsappRegex.test(socialValue) && !telegramRegex.test(socialValue)) {
+            showError(container, 'Введите корректную ссылку WhatsApp или Telegram.');
+            return false;
+        }
+        
+        clearError(container);
+        return true;
+    }
+
     function validateRadioGroup() {
         const checked = document.querySelector('input[name="gender"]:checked');
         const container = genderFieldset;
         if (!checked) {
             showError(container, 'Выберите ваш пол.');
+            return false;
+        }
+        clearError(container);
+        return true;
+    }
+
+    function validateContactMethod() {
+        const checked = document.querySelector('input[name="contactMethod"]:checked');
+        const container = contactMethodFieldset;
+        if (!checked) {
+            showError(container, 'Выберите предпочтительный способ связи.');
             return false;
         }
         clearError(container);
@@ -87,7 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!validateRequired(firstName)) isValid = false;
         if (!validateRequired(lastName)) isValid = false;
         if (!validateRequired(birthDate)) isValid = false;
+        if (!validatePhone(phone)) isValid = false;
+        if (!validateSocial(social)) isValid = false;
         if (!validateRadioGroup()) isValid = false;
+        if (!validateContactMethod()) isValid = false;
         if (!validateCheckboxGroup()) isValid = false;
         return isValid;
     };
@@ -119,43 +184,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const sendToTelegram = async () => {
-		  const firstNameValue = firstName.value.trim();
-		  const lastNameValue = lastName.value.trim();
-		  const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
-		  const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
-		  const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
-			  .map(cb => cb.labels[0].textContent)
-			  .join(', ');
+        const firstNameValue = firstName.value.trim();
+        const lastNameValue = lastName.value.trim();
+        const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
+        const phoneValue = phone.value.trim();
+        const socialValue = social.value.trim();
+        const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
+        const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
+        const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
+            .map(cb => cb.labels[0].textContent)
+            .join(', ');
 
-		  const formData = {
-			firstName: firstNameValue,
-			lastName: lastNameValue,
-			birthDate: birthDateValue,
-			gender: genderValue,
-			services: servicesValue
-		  };
+        const formData = {
+            firstName: firstNameValue,
+            lastName: lastNameValue,
+            birthDate: birthDateValue,
+            phone: phoneValue,
+            social: socialValue,
+            gender: genderValue,
+            contactMethod: contactMethodValue,
+            services: servicesValue
+        };
 
-		  try {
-			const response = await fetch('/.netlify/functions/sendToTelegram', {
-			  method: 'POST',
-			  headers: {
-				'Content-Type': 'application/json',
-			  },
-			  body: JSON.stringify(formData),
-			});
+        console.log('Sending data:', formData);
 
-			const result = await response.json();
-			
-			if (!response.ok) {
-			  throw new Error(result.error || 'Ошибка при отправке данных');
-			}
+        try {
+            const response = await fetch('/.netlify/functions/sendToTelegram', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-			return result;
-		  } catch (error) {
-			console.error("Failed to send message:", error);
-			throw error;
-		  }
-		};
+            const result = await response.json();
+            console.log('Server response:', result);
+            
+            if (!response.ok) {
+                // Если статус 500, но сообщение отправлено (частично успешно)
+                if (response.status === 500 && result.message) {
+                    // Все равно считаем успехом, если есть message
+                    return result;
+                }
+                throw new Error(result.error || 'Ошибка при отправке данных');
+            }
+
+            return result;
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            throw error;
+        }
+    };
 
     const showPopup = () => {
         popup.classList.add('show');
@@ -180,5 +259,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === "Escape" && popup.classList.contains('show')) {
             hidePopup();
         }
+    });
+
+    // Маска для телефона
+    phone.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.startsWith('7')) {
+            value = '+7' + value.substring(1);
+        } else if (value.startsWith('8')) {
+            value = '+7' + value.substring(1);
+        } else if (!value.startsWith('+')) {
+            value = '+7' + value;
+        }
+        
+        // Форматирование: +7 (999) 999-99-99
+        if (value.length > 2) {
+            value = value.substring(0, 2) + ' (' + value.substring(2);
+        }
+        if (value.length > 7) {
+            value = value.substring(0, 7) + ') ' + value.substring(7);
+        }
+        if (value.length > 12) {
+            value = value.substring(0, 12) + '-' + value.substring(12);
+        }
+        if (value.length > 15) {
+            value = value.substring(0, 15) + '-' + value.substring(15);
+        }
+        
+        e.target.value = value;
     });
 });
