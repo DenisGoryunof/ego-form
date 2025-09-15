@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        console.log('Form submit triggered');
+        
         const isFormValid = validateForm();
+        console.log('Form validation result:', isFormValid);
+        
         if (isFormValid) {
             setButtonLoading(true);
             try {
@@ -89,36 +93,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-	function validateSocial(element) {
-		const container = element.parentElement;
-		const socialValue = element.value.trim();
-		
-		if (socialValue === '') {
-			showError(container, 'Аккаунт в соцсети обязателен для заполнения.');
-			return false;
-		}
-		
-		// Простая проверка: должен начинаться с @, + или буквы/цифры
-		// и содержать минимум 5 символов (например: @user, +7999, username)
-		const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{3,}$/;
-		
-		if (!socialRegex.test(socialValue)) {
-			showError(container, 'Введите корректный аккаунт. Например: @username или +79999999999');
-			return false;
-		}
-		
-		// Дополнительная проверка для телефонных номеров
-		if (socialValue.startsWith('+')) {
-			const phonePart = socialValue.replace(/\D/g, '');
-			if (phonePart.length < 10) {
-				showError(container, 'Номер телефона слишком короткий.');
-				return false;
-			}
-		}
-		
-		clearError(container);
-		return true;
-	}
+    function validateSocial(element) {
+        const container = element.parentElement;
+        const socialValue = element.value.trim();
+        
+        if (socialValue === '') {
+            showError(container, 'Аккаунт в соцсети обязателен для заполнения.');
+            return false;
+        }
+        
+        // Простая проверка: должен начинаться с @, + или буквы/цифры
+        // и содержать минимум 5 символов (например: @user, +7999, username)
+        const socialRegex = /^[@+\dA-Za-z][@\dA-Za-z_\-\.]{3,}$/;
+        
+        if (!socialRegex.test(socialValue)) {
+            showError(container, 'Введите корректный аккаунт. Например: @username или +79999999999');
+            return false;
+        }
+        
+        // Дополнительная проверка для телефонных номеров
+        if (socialValue.startsWith('+')) {
+            const phonePart = socialValue.replace(/\D/g, '');
+            if (phonePart.length < 10) {
+                showError(container, 'Номер телефона слишком короткий.');
+                return false;
+            }
+        }
+        
+        clearError(container);
+        return true;
+    }
 
     function validateRadioGroup() {
         const checked = document.querySelector('input[name="gender"]:checked');
@@ -192,70 +196,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-	 const sendToTelegram = async () => {
-		const firstNameValue = firstName.value.trim();
-		const lastNameValue = lastName.value.trim();
-		const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
-		const phoneValue = phone.value.trim();
-		const socialValue = social.value.trim();
-		const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
-		const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
-		const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
-			.map(cb => cb.labels[0].textContent)
-			.join(', ');
+    const sendToTelegram = async () => {
+        const firstNameValue = firstName.value.trim();
+        const lastNameValue = lastName.value.trim();
+        const birthDateValue = new Date(birthDate.value).toLocaleDateString('ru-RU');
+        const phoneValue = phone.value.trim();
+        const socialValue = social.value.trim();
+        const genderValue = document.querySelector('input[name="gender"]:checked').labels[0].textContent;
+        const contactMethodValue = document.querySelector('input[name="contactMethod"]:checked').labels[0].textContent;
+        const servicesValue = Array.from(document.querySelectorAll('input[name="services"]:checked'))
+            .map(cb => cb.labels[0].textContent)
+            .join(', ');
 
-		// Формируем правильную ссылку из введенного аккаунта
-		let socialLink = socialValue;
-		if (socialValue.startsWith('@')) {
-			socialLink = `https://t.me/${socialValue.substring(1)}`;
-		} else if (socialValue.startsWith('+')) {
-			socialLink = `https://wa.me/${socialValue.replace(/\D/g, '')}`;
-		} else if (!socialValue.startsWith('http')) {
-			// Если просто имя без @, предполагаем Telegram
-			socialLink = `https://t.me/${socialValue}`;
-		}
+        // Формируем правильную ссылку из введенного аккаунта
+        let socialLink = socialValue;
+        if (socialValue.startsWith('@')) {
+            socialLink = `https://t.me/${socialValue.substring(1)}`;
+        } else if (socialValue.startsWith('+')) {
+            socialLink = `https://wa.me/${socialValue.replace(/\D/g, '')}`;
+        } else if (!socialValue.startsWith('http')) {
+            // Если просто имя без @, предполагаем Telegram
+            socialLink = `https://t.me/${socialValue}`;
+        }
 
-		const formData = {
-			firstName: firstNameValue,
-			lastName: lastNameValue,
-			birthDate: birthDateValue,
-			phone: phoneValue,
-			social: socialLink, // отправляем готовую ссылку
-			socialRaw: socialValue, // и исходное значение для отладки
-			gender: genderValue,
-			contactMethod: contactMethodValue,
-			services: servicesValue
-		};
+        const formData = {
+            firstName: firstNameValue,
+            lastName: lastNameValue,
+            birthDate: birthDateValue,
+            phone: phoneValue,
+            social: socialLink, // отправляем готовую ссылку
+            socialDisplay: socialValue, // исходное значение для отображения
+            gender: genderValue,
+            contactMethod: contactMethodValue,
+            services: servicesValue
+        };
 
-		console.log('Sending data:', formData);
+        console.log('Sending data:', formData);
 
-		try {
-			const response = await fetch('/.netlify/functions/sendToTelegram', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(formData),
-			});
+        try {
+            const response = await fetch('/.netlify/functions/sendToTelegram', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-			const result = await response.json();
-			console.log('Server response:', result);
-			
-			if (!response.ok) {
-				// Если статус 500, но сообщение отправлено (частично успешно)
-				if (response.status === 500 && result.message) {
-					// Все равно считаем успехом, если есть message
-					return result;
-				}
-				throw new Error(result.error || 'Ошибка при отправке данных');
-			}
+            const result = await response.json();
+            console.log('Server response:', result);
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Ошибка при отправке данных');
+            }
 
-			return result;
-		} catch (error) {
-			console.error("Failed to send message:", error);
-			throw error;
-		}
-	};
+            return result;
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            throw error;
+        }
+    };
 
     const showPopup = () => {
         popup.classList.add('show');
